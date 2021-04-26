@@ -1,0 +1,23 @@
+FROM centos:7
+
+RUN yum install -y epel-release
+RUN yum install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+# Add gdal 3.2
+RUN yum install -y gdal32 gdal32-devel
+RUN yum install -y python36 python36-devel
+RUN yum install -y gcc gcc-c++
+# add gdal32
+RUN python3.6 -mvenv /build/gdal/__venv__
+
+# prepare gdal wheel
+RUN env PATH=/usr/gdal32/bin/:$PATH /build/gdal/__venv__/bin/pip install wheel
+RUN env PATH=/usr/gdal32/bin/:$PATH /build/gdal/__venv__/bin/pip install numpy
+RUN env PATH=/usr/gdal32/bin/:$PATH /build/gdal/__venv__/bin/pip install gdal
+WORKDIR /build/gdal
+RUN env PATH=/usr/gdal32/bin/:$PATH /build/gdal/__venv__/bin/pip wheel numpy
+RUN env PATH=/usr/gdal32/bin/:$PATH /build/gdal/__venv__/bin/pip wheel gdal
+
+# prepare pycoco wheel
+RUN env CFLAGS=-std=c99 /build/gdal/__venv__/bin/pip install --upgrade pip
+RUN env CFLAGS=-std=c99 /build/gdal/__venv__/bin/pip install pycoco
+RUN env CFLAGS=-std=c99 /build/gdal/__venv__/bin/pip wheel pycoco
